@@ -1,198 +1,172 @@
-body {
- font-family: "Open Sans", sans-serif;
- font-style: normal;
- background: url('assets/FUNDO.png') no-repeat center center fixed;
- background-size: cover;
- margin: 0;
- padding: 0;
- position: relative;
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: flex-start;
- min-height: 100vh;
- padding-top: 60px;
- text-align: center;
- overflow-x: hidden;
+const imagens = [
+ "assets/CRETA - AZUL SAPPHIRE.png",
+ "assets/IONQ - PRATA.png",
+ "assets/TUCSON - PRATA.png",
+ "assets/HB20 - AZUL SAPHIRE.png",
+ "assets/KONA - PRETO.png"
+];
+
+const premios = [
+ "Bônus de R$5.000,00",
+ "Bônus de R$3.000,00",
+ "Documento 2026 Grátis (Emplacamento + Licenciamento)",
+ "Um ano de tanque Cheio (limitado a 1 por mês - Alcool)",
+ "Super Valorização no seu seminovo"
+];
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    const reels = document.querySelectorAll('.reel');
+    reels.forEach(reel => createReelImages(reel));
+    // Não chamamos bloqueio inicial aqui para não assustar o usuário
+});
+
+function createReelImages(reel, imagemForcada = null) {
+ reel.innerHTML = '';
+ for (let i = 0; i < 12; i++) {
+   const img = document.createElement('img');
+   img.src = imagemForcada ? imagemForcada : imagens[Math.floor(Math.random() * imagens.length)];
+   reel.appendChild(img);
+ }
 }
 
-.logo {
- position: absolute;
- top: 20px;
- left: 20px;
- width: 180px;
- z-index: 10;
-}
+function girar() {
+ console.log("Clicou em girar"); // Log para debug
+ const agora = Date.now();
+ const tempoLimite = 1800000; // 30 minutos
 
-/* TÍTULO */
-.titulo-janeiro {
-  font-family: "Open Sans", sans-serif;
-  font-weight: 800;
-  text-transform: uppercase;
-  font-size: 32px;
-  line-height: 1.1;
-  color: #ffffff !important;
-  margin-bottom: 20px;
-  text-shadow: 0px 3px 6px rgba(0,0,0,0.6);
-  letter-spacing: -1px;
-  padding: 0 15px;
-  z-index: 5;
-}
+ const dadosRoleta = JSON.parse(localStorage.getItem("roleta-dados")) || {
+   primeiroGiro: 0,
+   tentativas: 0
+ };
 
-.titulo-janeiro .destaque {
-  color: #00AAD2 !important;
-}
-
-/* ROLETA */
-.slot-machine {
- display: flex;
- gap: 10px;
- margin: 20px 0;
- justify-content: center;
- z-index: 5;
-}
-
-.slot {
- width: 130px;
- height: 100px;
- border: 3px solid #a8a9a8;
- border-radius: 10px;
- background-color: #ffffff;
- overflow: hidden;
- position: relative;
- box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-.reel {
- position: absolute;
- top: 0;
- width: 100%;
- height: 500px;
-}
-
-.reel img {
- width: 100%;
- height: 100px;
- object-fit: contain;
- display: block;
- padding: 5px;
- box-sizing: border-box;
-}
-
-/* BOTÃO */
-.button {
- display: inline-block;
- background: linear-gradient(180deg, #004c8c 0%, #003366 100%);
- color: white;
- border: none;
- padding: 15px 40px;
- border-radius: 50px;
- cursor: pointer;
- font-size: 20px;
- font-weight: bold;
- text-transform: uppercase;
- box-shadow: 0 4px 10px rgba(0,0,0,0.3);
- transition: transform 0.2s, box-shadow 0.2s;
- text-decoration: none;
- min-width: 280px;
- z-index: 20; /* Z-index alto para garantir o clique */
-}
-
-.button:active {
- transform: scale(0.95);
-}
-
-.button:disabled {
- background: #cccccc;
- cursor: not-allowed;
- transform: none;
-}
-
-.result {
- margin-top: 20px;
- font-size: 20px;
- color: #fff;
- text-align: center;
- font-weight: bold;
- text-shadow: 0 2px 4px rgba(0,0,0,0.5);
- min-height: 30px;
- z-index: 5;
-}
-
-/* TIMER */
-.timer-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 44, 95, 0.98);
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  backdrop-filter: blur(5px);
-}
-
-.timer-container.show {
-  display: flex;
-}
-
-#timer-text {
-  font-size: 50px;
-  font-weight: 800;
-  color: #fff;
-  background: rgba(255,255,255,0.1);
-  padding: 10px 30px;
-  border-radius: 10px;
-  margin-top: 15px;
-  font-variant-numeric: tabular-nums;
-}
-
-.legal {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.7);
-  max-width: 800px;
-  margin: 40px auto 20px;
-  padding: 0 20px;
-  line-height: 1.4;
-}
-
-/* MOBILE */
-@media (max-width: 600px) {
- body {
-   background: url('assets/MOBILE.png') no-repeat center top fixed;
-   background-size: cover;
-   padding-top: 80px;
+ // Reset de tempo se passou 30min
+ if (agora - dadosRoleta.primeiroGiro > tempoLimite) {
+   dadosRoleta.primeiroGiro = agora;
+   dadosRoleta.tentativas = 0;
+   localStorage.setItem("roleta-dados", JSON.stringify(dadosRoleta));
  }
 
- .logo {
-   width: 120px;
-   left: 50%;
-   transform: translateX(-50%);
+ // --- LÓGICA DE BLOQUEIO (Só ativa se clicar E já tiver 3 tentativas) ---
+ if (dadosRoleta.tentativas >= 3) {
+   const tempoRestante = tempoLimite - (agora - dadosRoleta.primeiroGiro);
+   const timerContainer = document.getElementById("timer-container");
+   
+   timerContainer.classList.add("show");
+   iniciarTimer(tempoRestante);
+   return; // Para a função aqui
+ }
+
+ // --- SE PASSOU DAQUI, VAI GIRAR ---
+ 
+ if (dadosRoleta.tentativas === 0) {
+     dadosRoleta.primeiroGiro = agora;
  }
  
- .titulo-janeiro {
-    font-size: 22px;
-    margin-top: 10px;
+ dadosRoleta.tentativas += 1;
+ localStorage.setItem("roleta-dados", JSON.stringify(dadosRoleta));
+
+ // Toca áudio
+ const audio = document.getElementById("audio-spin");
+ if (audio) {
+   audio.currentTime = 0;
+   audio.play().catch(e => console.log("Áudio bloqueado pelo navegador"));
  }
 
- .slot-machine {
-   gap: 5px;
- }
-
- .slot {
-   width: 30vw;
-   height: 80px;
- }
+ const reels = document.querySelectorAll('.reel');
  
- .reel img {
-    height: 80px;
+ // Busca o botão pelo ID 'btn-girar'
+ const btn = document.getElementById("btn-girar");
+ 
+ if (btn) {
+    btn.disabled = true;
+    btn.textContent = "GIRANDO...";
  }
 
- .button {
-   width: 90%;
-   font-size: 18px;
+ const chanceDeGanho = 0.3;
+ const vaiGanhar = Math.random() < chanceDeGanho;
+ let imagemVencedora = null;
+
+ if (vaiGanhar) {
+   imagemVencedora = imagens[Math.floor(Math.random() * imagens.length)];
  }
+
+ reels.forEach((reel, i) => {
+   createReelImages(reel, null); 
+   
+   const imgResultado = document.createElement('img');
+   imgResultado.src = imagemVencedora || imagens[Math.floor(Math.random() * imagens.length)];
+   reel.appendChild(imgResultado);
+
+   reel.style.transition = 'none';
+   reel.style.transform = 'translateY(0)';
+   
+   setTimeout(() => {
+       reel.style.transition = `transform 1.5s cubic-bezier(0.25, 1, 0.5, 1) ${i * 0.2}s`;
+       const alturaSlot = 100; 
+       const totalImagens = reel.children.length;
+       const posicaoFinal = (totalImagens - 1) * alturaSlot; 
+       reel.style.transform = `translateY(-${posicaoFinal}px)`;
+   }, 50);
+ });
+
+ setTimeout(() => {
+   const slots = Array.from(reels).map(reel => reel.lastElementChild.src);
+   const resultadoEl = document.getElementById("resultado");
+   const cta = document.getElementById("cta");
+   const todasIguais = slots.every(src => src === slots[0]);
+
+   if (todasIguais) {
+     const premio = premios[Math.floor(Math.random() * premios.length)];
+     resultadoEl.textContent = `🎉 PARABÉNS! VOCÊ GANHOU: ${premio}`;
+     
+     if (typeof confetti === "function") {
+         confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 }
+         });
+     }
+
+     const numeroWhatsApp = '5514997246268'; 
+     const mensagem = `Oi 👋 Girei a roleta da Hyundai Top Motors e ganhei: *${premio}*! Como resgato? 🤩`;
+     const linkWhatsapp = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`;
+
+     cta.href = linkWhatsapp;
+     cta.innerHTML = `🎁 RESGATAR PRÊMIO`;
+     cta.style.display = "inline-block";
+   } else {
+     resultadoEl.textContent = `Não foi dessa vez! Tente novamente.`;
+     cta.style.display = "none";
+   }
+
+   // Reativa o botão
+   if (btn) {
+       btn.disabled = false;
+       btn.textContent = "GIRAR NOVAMENTE";
+   }
+
+ }, 2200);
+}
+
+function iniciarTimer(tempoRestante) {
+ const timerText = document.getElementById("timer-text");
+ 
+ function atualizarTimer() {
+   if (tempoRestante <= 0) {
+     location.reload(); 
+     return;
+   }
+
+   const minutos = Math.floor(tempoRestante / 60000);
+   const segundos = Math.floor((tempoRestante % 60000) / 1000);
+   if(timerText) {
+       timerText.textContent = `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+   }
+   tempoRestante -= 1000;
+ }
+
+ if (window.timerInterval) clearInterval(window.timerInterval);
+ window.timerInterval = setInterval(atualizarTimer, 1000);
+ atualizarTimer();
 }
